@@ -1,0 +1,28 @@
+{
+  "name": "enfield",
+  "version": "1.0.0",
+  "description": "A themable static site generator for API docs.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattvagni/enfield.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mattvagni/enfield/issues"
+  },
+  "homepage": "https://github.com/mattvagni/enfield#readme",
+  "dependencies": {
+    "async": "^1.5.2",
+    "chalk": "^1.1.1",
+    "commander": "^2.9.0",
+    "fs-extra": "^0.26.5",
+    "js-yaml": "^3.5.3",
+    "lodash": "^4.3.0",
+    "mustache": "^2.2.1"
+  }
+}
