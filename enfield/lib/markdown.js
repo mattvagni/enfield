@@ -18,6 +18,9 @@ marked.setOptions({
 
 /**
  * Reads a markdown file from disc & parses it.
+ *
+ * @param {string} markdownFile The location to the markdownFile to parse.
+ * @param {function} callback Called with the result of the parsing.
  */
 function parse(markdownFile, callback) {
     let markdown;

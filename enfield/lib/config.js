@@ -17,9 +17,8 @@ let configLocation;
 
 /**
  * Checks that a title is valid.
- * It has to:
- * - Be a string
- * - Be at least 1 character
+ *
+ * @param {object} config
  */
 function getTitle(config) {
 
@@ -39,6 +38,8 @@ function getTitle(config) {
  * - Be defined as a string
  * - Be a folder
  * - Contain a file called `template.mustache`
+ *
+ * @param {object} config
  */
 function getTheme(config) {
 
@@ -65,6 +66,9 @@ function getTheme(config) {
  * Checks an individual page is correct.
  * Page is an object where the key is the pageName and the value is, depending
  * on depth, either an array of other pages or a string pointing to a markdown file.
+ *
+ * @param {object} page A single page from the config Pages
+ * @param {number} depth The depth of the page (if it's in a section or not)
  */
 function validatePage(page, depth) {
     let pageName = Object.keys(page)[0];
@@ -110,6 +114,8 @@ function validatePage(page, depth) {
  * - Has to be a list
  * - Each page must be a string that points to a markdown file.
  * - You can only go two levels deep in the nesting of pages.
+ *
+ * @param {object} config
  */
 function getPages(config) {
 
@@ -191,9 +197,11 @@ function getPages(config) {
 
 module.exports = {
 
-    /*
-    Gets the config and validates that it's valid.
-    If it finds a mistake it throws an error.
+    /**
+     * Gets the config and validates that it's valid.
+     * If it finds a mistake it throws an error.
+     *
+     * @param {string} configFile The location of the configFile
      */
     parse(configFile) {
         let rawConfig = {};
@@ -217,7 +225,6 @@ module.exports = {
         };
 
         log.debug('Config:' +  JSON.stringify(config, null, 4));
-        log.success(`Parsed ${path.relative(process.cwd(), configFile)}`);
         return config;
     }
 };

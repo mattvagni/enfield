@@ -132,8 +132,13 @@ function getContextPerPage(config, callback) {
 
 /**
  * Loops through each page context and outputs the page.
+ *
+ * @param {object} config
+ * @param {string} outputDir
+ * @param {array} pageContextList An array of the template context per page
+ * @param {function} callback Called once all pages have been outputted
  */
-function outputPages(config, pageContextList, outputDir, callback) {
+function outputPages(config, outputDir, pageContextList, callback) {
 
     // No need to try catch this as our config check's it's readable.
     const templateLocation = path.join(config.theme, TEMPLATE_FILE_NAME);
@@ -148,7 +153,7 @@ function outputPages(config, pageContextList, outputDir, callback) {
 
         try {
             fs.outputFileSync(outputPath, html);
-            log.success(`${path.relative(process.cwd(), outputPath)}`);
+            log.debug(`"${pageContext.page.title}" -> ${outputPath}`);
         }
         catch(writeError) {
             raiseError(
@@ -165,6 +170,9 @@ function outputPages(config, pageContextList, outputDir, callback) {
 /**
  * This copies all files from the root of the theme folder
  * besides the template file since that's useless.
+ *
+ * @param {object} config
+ * @param {string} outputDir
  */
 function copyThemeFiles(config, outputDir) {
     const files = fs.readdirSync(config.theme);
@@ -174,20 +182,34 @@ function copyThemeFiles(config, outputDir) {
         const src = path.join(config.theme, file);
         const dest = path.join(outputDir, file);
         fs.copy(src, dest);
-        log.success(`+ ${path.relative(process.cwd(), dest)}`);
+        log.debug(`${src} -> ${dest}`);
     });
 }
 
+
 /**
  * Build :allthethings:
+ *
+ * @param {object} config
+ * @param {string} outputDir
+ * @param {function} callback Called once all pages are built.
  */
 function build(config, outputDir, callback) {
+
     getContextPerPage(config, (err, pages) => {
         fs.removeSync(outputDir);
+        log.debug(`Deleted: ${path.relative(process.cwd(), outputDir)}`);
         copyThemeFiles(config, outputDir);
-        outputPages(config, pages, outputDir, callback);
+        outputPages(config, outputDir, pages, () => {
+            log.success(`Built ${pages.length} pages to ./${path.relative(process.cwd(), outputDir)}`);
+
+            if (callback) {
+                callback();
+            }
+        });
     });
 }
+
 
 module.exports = {
     build
