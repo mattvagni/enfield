@@ -4,8 +4,32 @@ const fs = require('fs');
 
 const marked = require('marked');
 const pygmentize = require('pygmentize-bundled');
+const _ = require('lodash');
 
 const raiseError = require('./raiseError');
+
+const renderer = new marked.Renderer();
+
+let headings = [];
+
+renderer.heading = function(text, level) {
+    const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+
+    let string = '';
+    string += `<h${level}>`;
+    string += `<a name="${escapedText}" class="anchor" href="#${escapedText}">`;
+    string += text;
+    string += '</a>';
+    string += `</h${level}>`;
+
+    headings.push({
+        level: level,
+        anchor: `#${escapedText}`,
+        heading: text
+    });
+
+    return string;
+};
 
 marked.setOptions({
     highlight: function(code, lang, callback) {
@@ -23,10 +47,12 @@ marked.setOptions({
  * @param {function} callback Called with the result of the parsing.
  */
 function parse(markdownFile, callback) {
-    let markdown;
+    let markdownString;
+
+    headings = [];
 
     try {
-        markdown = fs.readFileSync(markdownFile, 'utf8');
+        markdownString = fs.readFileSync(markdownFile, 'utf8');
     }
     catch(e) {
         raiseError(
@@ -34,7 +60,7 @@ function parse(markdownFile, callback) {
         );
     }
 
-    marked(markdown, (err, string) => {
+    marked(markdownString, {renderer: renderer}, (err, html) => {
 
         if (err) {
             raiseError(
@@ -43,7 +69,14 @@ function parse(markdownFile, callback) {
             );
         }
 
-        callback(err, string);
+        let copyOfHeadings = _.clone(headings);
+        headings = [];
+
+        callback(err, {
+            html: html,
+            headings: copyOfHeadings
+        });
+
     });
 }
 

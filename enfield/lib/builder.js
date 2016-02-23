@@ -63,11 +63,14 @@ function createMenuContext(pageContextsList, currentPageContext) {
             });
         }
 
+        let isActive = page.url === currentPageContext.url;
+
         menuItems.push({
             isPage: true,
-            isActive: page.url === currentPageContext.url,
+            isActive: isActive,
             title: page.title,
             url: page.url,
+            headings: (isActive) ? currentPageContext.headings : []
         });
 
     });
@@ -92,8 +95,9 @@ function createPageContext(configPage, pageIndex, callback) {
     page.section = configPage.section;
     page.url = (isHomepage) ? '/' : getPageUrl(configPage);
 
-    markdown.parse(configPage.markdown, (err, html) => {
-        page.content = html;
+    markdown.parse(configPage.markdown, (err, markdownResults) => {
+        page.content = markdownResults.html;
+        page.headings = markdownResults.headings;
         callback(err, page);
     });
 }
