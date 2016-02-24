@@ -51,7 +51,7 @@ function getTheme(config) {
     }
 
     try {
-        fs.readFileSync(path.join(config.theme, 'template.mustache'), 'utf8');
+        fs.readFileSync(path.join(config.theme, 'template.html'), 'utf8');
         return config.theme;
     }
     catch (readError) {
@@ -60,6 +60,27 @@ function getTheme(config) {
             readError
         );
     }
+}
+
+/**
+ * Get's the site url for when it is 'published'.
+ */
+function getBaseUrl(config) {
+    if (config.base_url === undefined) {
+        return '/';
+    }
+
+    if (!_.isString(config.base_url)) {
+        raiseError(
+            'You have incorrectly defined the \'base_url\' in your config.',
+            `Expected 'base_url' to be a string in ${configLocation}`
+        );
+    }
+    // Remove trailing slashes.
+    if (config.base_url[config.base_url.length - 1] === '/') {
+        return config.base_url.slice(0, -1);
+    }
+    return config.base_url;
 }
 
 /**
@@ -195,6 +216,15 @@ function getPages(config) {
 }
 
 
+/**
+ * Get any other settings that the user has in the config.
+ *
+ * @param {object} config
+ */
+function getSiteConfig(rawConfig) {
+    return _.omit(rawConfig, ['pages', 'theme', 'title']);
+}
+
 module.exports = {
 
     /**
@@ -221,7 +251,9 @@ module.exports = {
         config = {
             title: getTitle(rawConfig),
             theme: getTheme(rawConfig),
-            pages: getPages(rawConfig)
+            pages: getPages(rawConfig),
+            site: getSiteConfig(rawConfig),
+            base_url: getBaseUrl(rawConfig)
         };
 
         log.debug('Config:' +  JSON.stringify(config, null, 4));

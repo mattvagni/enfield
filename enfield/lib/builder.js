@@ -4,14 +4,15 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const async = require('async');
-const mustache = require('mustache');
+const swig = require('swig');
 const _ = require('lodash');
+const urlBuilder = require('url-assembler');
 
 const log = require('./log');
 const markdown = require('./markdown');
 const raiseError = require('./raiseError');
 
-const TEMPLATE_FILE_NAME = 'template.mustache';
+const TEMPLATE_FILE_NAME = 'template.html';
 
 
 /**
@@ -163,7 +164,8 @@ function getContextPerPage(config, callback) {
                 menuItems: createMenuContext(pageContexts, pageContext),
                 page: pageContext,
                 title: config.title,
-                pagination: createPaginationContext(pageContexts, pageContext)
+                pagination: createPaginationContext(pageContexts, pageContext),
+                site: config.site
             };
         });
         log.debug('Pages Contexts:' + JSON.stringify(pageContexts, null, 2));
@@ -178,21 +180,41 @@ function getContextPerPage(config, callback) {
  *
  * @param {object} config
  * @param {string} outputDir
- * @param {array} pageContextList An array of the template context per page
+ * @param {array} pageContextList An array of the template context per page.
+ * @param {boolean} isPublishBuild Whether to prepend the configs base_url or not.
  * @param {function} callback Called once all pages have been outputted
  */
-function outputPages(config, outputDir, pageContextList, callback) {
+function outputPages(config, outputDir, pageContextList, isPublishBuild, callback) {
 
     // No need to try catch this as our config check's it's readable.
     const templateLocation = path.join(config.theme, TEMPLATE_FILE_NAME);
     let template = fs.readFileSync(templateLocation, 'utf8');
 
+    // If this is a 'publish build' (i.e it's for github pages)
+    // then prepend the config's base_url.
+    swig.setFilter('url', function(input) {
+        if (isPublishBuild) {
+            return urlBuilder(config.base_url).segment(input).toString();
+        }
+        return input;
+    });
+
     pageContextList.forEach((pageContext) => {
-        let html = mustache.render(template, pageContext);
 
         let outputPath = path.join(
             outputDir, pageContext.page.url, '/index.html'
         );
+        let html;
+
+        try {
+            html = swig.render(template, { locals: pageContext});
+        }
+        catch(swigError) {
+            raiseError(
+                `Error rendering your theme's template (${templateLocation})`,
+                swigError
+            );
+        }
 
         try {
             fs.outputFileSync(outputPath, html);
@@ -229,7 +251,6 @@ function copyThemeFiles(config, outputDir) {
     });
 }
 
-
 /**
  * Build :allthethings:
  *
@@ -237,13 +258,11 @@ function copyThemeFiles(config, outputDir) {
  * @param {string} outputDir
  * @param {function} callback Called once all pages are built.
  */
-function build(config, outputDir, callback) {
+function build(config, outputDir, isPublishBuild, callback) {
 
     getContextPerPage(config, (err, pages) => {
-        fs.removeSync(outputDir);
-        log.debug(`Deleted: ${path.relative(process.cwd(), outputDir)}`);
         copyThemeFiles(config, outputDir);
-        outputPages(config, outputDir, pages, () => {
+        outputPages(config, outputDir, pages, isPublishBuild, () => {
             log.success(`Built ${pages.length} pages to ./${path.relative(process.cwd(), outputDir)}`);
 
             if (callback) {
