@@ -261,8 +261,13 @@ function copyThemeFiles(config, outputDir) {
 function build(config, outputDir, isPublishBuild, callback) {
 
     getContextPerPage(config, (err, pages) => {
+
+        // Copy any theme files over.
         copyThemeFiles(config, outputDir);
+
+        // Write our actual pages.
         outputPages(config, outputDir, pages, isPublishBuild, () => {
+
             log.success(`Built ${pages.length} pages to ./${path.relative(process.cwd(), outputDir)}`);
 
             if (callback) {
@@ -274,5 +279,5 @@ function build(config, outputDir, isPublishBuild, callback) {
 
 
 module.exports = {
-    build
+    build: build
 };
