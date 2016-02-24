@@ -58,9 +58,11 @@ function createMenuContext(pageContextsList, currentPageContext) {
 
         if (page.section !== lastSection) {
             menuItems.push({
-                isSectionHeading: true,
+                isSectionTitle: true,
                 title: page.section
             });
+
+            lastSection = page.section;
         }
 
         let isActive = page.url === currentPageContext.url;
@@ -68,6 +70,7 @@ function createMenuContext(pageContextsList, currentPageContext) {
         menuItems.push({
             isPage: true,
             isActive: isActive,
+            section: page.section,
             title: page.title,
             url: page.url,
             headings: (isActive) ? currentPageContext.headings : []
@@ -76,6 +79,39 @@ function createMenuContext(pageContextsList, currentPageContext) {
     });
 
     return menuItems;
+}
+
+/**
+ * Returns the pagination context
+ *
+ * @param {array} pageContexts The list of the context per page
+ * @param {object} pageContext The context of the current page.
+ */
+function createPaginationContext(pageContexts, pageContext) {
+
+    let context = {};
+
+    let currentIndex = _.findIndex(pageContexts, (p) => {
+        return p.url === pageContext.url;
+    });
+
+    if (currentIndex > 0) {
+        let prevPage = pageContexts[currentIndex - 1];
+        context.previousPage = {
+            title: prevPage.title,
+            url: prevPage.url
+        };
+    }
+
+    if (currentIndex < pageContexts.length - 1) {
+        let nextPage = pageContexts[currentIndex + 1];
+        context.nextPage = {
+            title: nextPage.title,
+            url: nextPage.url
+        };
+    }
+
+    return context;
 }
 
 
@@ -122,9 +158,12 @@ function getContextPerPage(config, callback) {
         // We do this after the fact because it's much easier
         // to create the menu context with the full list of page contexts.
         pageContexts = pageContexts.map((pageContext) => {
+
             return {
                 menuItems: createMenuContext(pageContexts, pageContext),
-                page: pageContext
+                page: pageContext,
+                title: config.title,
+                pagination: createPaginationContext(pageContexts, pageContext)
             };
         });
         log.debug('Pages Contexts:' + JSON.stringify(pageContexts, null, 2));

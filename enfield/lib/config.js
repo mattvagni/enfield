@@ -171,7 +171,7 @@ function getPages(config) {
 
             validatePage(subPage, 2);
 
-            if (subPageTitleMap.has(pageTitle.toLowerCase())) {
+            if (subPageTitleMap.has(subpageTitle.toLowerCase())) {
                 raiseError(
                     `It looks like you have two subpages of "${pageTitle}" both called "${subpageTitle}". Page names at each level must be unique.`
                 );
@@ -219,7 +219,7 @@ module.exports = {
         }
 
         config = {
-            title : getTitle(rawConfig),
+            title: getTitle(rawConfig),
             theme: getTheme(rawConfig),
             pages: getPages(rawConfig)
         };

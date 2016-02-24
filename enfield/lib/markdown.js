@@ -16,17 +16,15 @@ renderer.heading = function(text, level) {
     const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
 
     let string = '';
-    string += `<h${level}>`;
-    string += `<a name="${escapedText}" class="anchor" href="#${escapedText}">`;
-    string += text;
-    string += '</a>';
-    string += `</h${level}>`;
+    string += `<h${level} id="${escapedText}">${text}</h${level}>`;
 
-    headings.push({
-        level: level,
-        anchor: `#${escapedText}`,
-        heading: text
-    });
+    if (level < 3) {
+        headings.push({
+            level: level,
+            anchor: `#${escapedText}`,
+            heading: text
+        });
+    }
 
     return string;
 };
@@ -35,6 +33,13 @@ marked.setOptions({
     highlight: function(code, lang, callback) {
         const options = { lang: lang, format: 'html' };
         pygmentize(options, code, function(err, result) {
+            if (err) {
+                raiseError(
+                    'There was an error highlighting some code in one of your markdown files.',
+                    err
+                );
+            }
+
             callback(err, result.toString());
         });
     }
@@ -69,6 +74,10 @@ function parse(markdownFile, callback) {
             );
         }
 
+        // This is async so we need to clone the headings & then
+        // clear them for the next call to this. If we clear them after
+        // the callback then the execution order won't be correct.
+        // #javascript
         let copyOfHeadings = _.clone(headings);
         headings = [];
 
