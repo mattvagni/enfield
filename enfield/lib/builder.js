@@ -3,234 +3,55 @@
 const path = require('path');
 const fs = require('fs-extra');
 
-const async = require('async');
 const swig = require('swig');
 const _ = require('lodash');
 const urlBuilder = require('url-assembler');
 
 const log = require('./log');
-const markdown = require('./markdown');
 const raiseError = require('./raiseError');
-
-const TEMPLATE_FILE_NAME = 'template.html';
-
+const context = require('./context');
 
 /**
- * Takes a page name & converts it to a slug that is url safe.
- *
- * @param {string} s The string to convert to a slug.
+ * The name of the template that is expected to be within
+ * the theme.
  */
-function slugify(s) {
-    return s.toString()
-            .toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^\w\-]+/g, '')
-            .replace(/\-\-+/g, '-')
-            .replace(/^-+/, '')
-            .replace(/-+$/, '');
-}
-
+const templateFileName = 'template.html';
 
 /**
- * Given a page from the config, returns the page's url.
+ * Writes a single page to disc.
  *
- * @param {object} configPage
- * @param {string} section The section the page is in.
+ * @param {object} pageContext The context to a single page.
+ * @param {string} template The template
+ * @param {string} outputDir Where to output the page to.
  */
-function getPageUrl(configPage) {
-    const sectionSlug = slugify(configPage.section);
-    const titleSlug = slugify(configPage.title);
-    return path.join('/', sectionSlug, titleSlug, '/');
-}
+function writePage(pageContext, template, outputDir) {
 
+    let outputPath = path.join(
+        outputDir, pageContext.page.url, '/index.html'
+    );
+    let html;
 
-/**
- * Create global context. This is provided to every template.
- *
- * @param {object} config
- * @param {object} currentPageContext The context of the current page.
- */
-function createMenuContext(pageContextsList, currentPageContext) {
-
-    let menuItems = [];
-    let lastSection = '';
-
-    pageContextsList.forEach((page, index, pages) => {
-
-        if (page.section !== lastSection) {
-            menuItems.push({
-                isSectionTitle: true,
-                title: page.section
-            });
-
-            lastSection = page.section;
-        }
-
-        let isActive = page.url === currentPageContext.url;
-
-        menuItems.push({
-            isPage: true,
-            isActive: isActive,
-            section: page.section,
-            title: page.title,
-            url: page.url,
-            headings: (isActive) ? currentPageContext.headings : []
-        });
-
-    });
-
-    return menuItems;
-}
-
-/**
- * Returns the pagination context
- *
- * @param {array} pageContexts The list of the context per page
- * @param {object} pageContext The context of the current page.
- */
-function createPaginationContext(pageContexts, pageContext) {
-
-    let context = {};
-
-    let currentIndex = _.findIndex(pageContexts, (p) => {
-        return p.url === pageContext.url;
-    });
-
-    if (currentIndex > 0) {
-        let prevPage = pageContexts[currentIndex - 1];
-        context.previousPage = {
-            title: prevPage.title,
-            url: prevPage.url
-        };
+    try {
+        html = swig.render(template, { locals: pageContext});
     }
-
-    if (currentIndex < pageContexts.length - 1) {
-        let nextPage = pageContexts[currentIndex + 1];
-        context.nextPage = {
-            title: nextPage.title,
-            url: nextPage.url
-        };
-    }
-
-    return context;
-}
-
-
-/**
- * Creates the context for a single page.
- *
- * @param {object} configPage
- * @param {string} section The name of the section (optional)
- * @param {function} callback
- */
-function createPageContext(configPage, pageIndex, callback) {
-
-    const isHomepage = pageIndex === 0;
-    const page = {};
-
-    page.title = configPage.title;
-    page.section = configPage.section;
-    page.url = (isHomepage) ? '/' : getPageUrl(configPage);
-
-    markdown.parse(configPage.markdown, (err, markdownResults) => {
-        page.content = markdownResults.html;
-        page.headings = markdownResults.headings;
-        callback(err, page);
-    });
-}
-
-
-/**
- * Creates a list with the context for each page.
- *
- * @param {object} config The parsed config
- * @param {function} callback
- */
-function getContextPerPage(config, callback) {
-
-    let index = 0;
-
-    // Loop through each page and do the creation of the page asynchrously.
-    async.map(config.pages, (page, pageCreationCallback) => {
-        createPageContext(page, index++, pageCreationCallback);
-    }, (err, pageContexts) => {
-
-        // Add the menu to the context of each page.
-        // We do this after the fact because it's much easier
-        // to create the menu context with the full list of page contexts.
-        pageContexts = pageContexts.map((pageContext) => {
-
-            return {
-                menuItems: createMenuContext(pageContexts, pageContext),
-                page: pageContext,
-                title: config.title,
-                pagination: createPaginationContext(pageContexts, pageContext),
-                site: config.site
-            };
-        });
-        log.debug('Pages Contexts:' + JSON.stringify(pageContexts, null, 2));
-        callback(err, pageContexts);
-    });
-
-}
-
-
-/**
- * Loops through each page context and outputs the page.
- *
- * @param {object} config
- * @param {string} outputDir
- * @param {array} pageContextList An array of the template context per page.
- * @param {boolean} isPublishBuild Whether to prepend the configs base_url or not.
- * @param {function} callback Called once all pages have been outputted
- */
-function outputPages(config, outputDir, pageContextList, isPublishBuild, callback) {
-
-    // No need to try catch this as our config check's it's readable.
-    const templateLocation = path.join(config.theme, TEMPLATE_FILE_NAME);
-    let template = fs.readFileSync(templateLocation, 'utf8');
-
-    // If this is a 'publish build' (i.e it's for github pages)
-    // then prepend the config's base_url.
-    swig.setFilter('url', function(input) {
-        if (isPublishBuild) {
-            return urlBuilder(config.base_url).segment(input).toString();
-        }
-        return input;
-    });
-
-    pageContextList.forEach((pageContext) => {
-
-        let outputPath = path.join(
-            outputDir, pageContext.page.url, '/index.html'
+    catch(swigError) {
+        raiseError(
+            'Error rendering your theme\'s template.',
+            swigError
         );
-        let html;
+    }
 
-        try {
-            html = swig.render(template, { locals: pageContext});
-        }
-        catch(swigError) {
-            raiseError(
-                `Error rendering your theme's template (${templateLocation})`,
-                swigError
-            );
-        }
-
-        try {
-            fs.outputFileSync(outputPath, html);
-            log.debug(`"${pageContext.page.title}" -> ${outputPath}`);
-        }
-        catch(writeError) {
-            raiseError(
-                `Error writing page to ${outputPath}`,
-                writeError
-            );
-        }
-    });
-
-    callback(null);
+    try {
+        fs.outputFileSync(outputPath, html);
+        log.debug(`"${pageContext.page.title}" -> ${outputPath}`);
+    }
+    catch(writeError) {
+        raiseError(
+            `Error writing page to ${outputPath}`,
+            writeError
+        );
+    }
 }
-
 
 /**
  * This copies all files from the root of the theme folder
@@ -241,7 +62,7 @@ function outputPages(config, outputDir, pageContextList, isPublishBuild, callbac
  */
 function copyThemeFiles(config, outputDir) {
     const files = fs.readdirSync(config.theme);
-    const filesToCopy = _.without(files, TEMPLATE_FILE_NAME);
+    const filesToCopy = _.without(files, templateFileName);
 
     filesToCopy.forEach((file) => {
         const src = path.join(config.theme, file);
@@ -252,32 +73,68 @@ function copyThemeFiles(config, outputDir) {
 }
 
 /**
+ * Deletes the output dir.
+ */
+function cleanBuildDirectory(outputDir) {
+
+    let realWorkingDir = fs.realpathSync(process.cwd());
+    let realOutputDir = fs.realpathSync(outputDir);
+
+    if (realWorkingDir === realOutputDir || realWorkingDir.length > realOutputDir.length) {
+        raiseError(
+            'Your output directory must be subfolder. This is because enfield deletes ' +
+            'it each time before rebuilding. We don\'t ever want to delete anything ' +
+            'outside of the current working directory. Ever.'
+        );
+    }
+
+    log.debug(`Deleting ${outputDir}`);
+    fs.emptyDirSync(outputDir);
+}
+
+/**
  * Build :allthethings:
  *
  * @param {object} config
  * @param {string} outputDir
+ * @param {boolean} isPublishBuild
  * @param {function} callback Called once all pages are built.
  */
 function build(config, outputDir, isPublishBuild, callback) {
 
-    getContextPerPage(config, (err, pages) => {
+    const templateLocation = path.join(config.theme, templateFileName);
 
-        // Copy any theme files over.
-        copyThemeFiles(config, outputDir);
+    // No need to try catch this as our config guarantees this.
+    const template = fs.readFileSync(templateLocation, 'utf8');
 
-        // Write our actual pages.
-        outputPages(config, outputDir, pages, isPublishBuild, () => {
+    cleanBuildDirectory(outputDir);
+    copyThemeFiles(config, outputDir);
 
-            log.success(`Built ${pages.length} pages to ./${path.relative(process.cwd(), outputDir)}`);
+    // If this is a 'publish' build then respect the config's base_url
+    swig.setFilter('url', function(input) {
+        if (isPublishBuild) {
+            return urlBuilder(config.base_url).segment(input).toString();
+        }
+        return input;
+    });
 
-            if (callback) {
-                callback();
-            }
+    context.getPageContextList(config, (err, pages) => {
+
+        pages.forEach((pageContext) => {
+            writePage(pageContext, template, outputDir);
         });
+
+        log.success(`Built "${config.title}" pages to ${path.relative(process.cwd(), outputDir)}`);
+
+        if (callback) {
+            callback();
+        }
+
     });
 }
 
 
 module.exports = {
-    build: build
+    build: build,
+    templateFileName: templateFileName
 };

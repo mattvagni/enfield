@@ -5,6 +5,7 @@ const fs = require('fs');
 const marked = require('marked');
 const pygmentize = require('pygmentize-bundled');
 const _ = require('lodash');
+const striptags = require('striptags');
 
 const raiseError = require('./raiseError');
 
@@ -22,7 +23,7 @@ renderer.heading = function(text, level) {
         headings.push({
             level: level,
             anchor: `#${escapedText}`,
-            heading: text
+            heading: striptags(text)
         });
     }
 

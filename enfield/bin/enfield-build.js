@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+
 const options = require('commander');
 
 const config = require('../lib/config');
@@ -25,6 +26,7 @@ if (options.debug) {
 let outputDir = path.join(process.cwd(), options.outputDir);
 let parsedConfig;
 
+
 function parseConfig() {
     parsedConfig = config.parse(path.join(process.cwd(), options.config));
 }
@@ -40,13 +42,12 @@ function getFilesToWatch() {
     return filesToWatch;
 }
 
-// Parse the config
 parseConfig();
 build(() => {
 
     if (options.watch) {
         watcher.watch(getFilesToWatch(), () => {
-            // On watch, re-parse the config.
+            // On watch, re-parse the config & rebuild.
             parseConfig();
             build();
         });

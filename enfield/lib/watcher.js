@@ -55,7 +55,7 @@ function startWatch(filesToWatch, callback) {
         raiseError('Error watching files.', error);
     })
     .on('ready', () => {
-        log.success('Watching for changes');
+        log.success('Watching for file changes');
         isReady = true;
     });
 }

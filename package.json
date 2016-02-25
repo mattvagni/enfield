@@ -27,6 +27,7 @@
     "js-yaml": "^3.5.3",
     "lodash": "^4.3.0",
     "serve-static": "^1.10.2",
+    "striptags": "^2.1.1",
     "swig": "^1.4.2",
     "url-assembler": "^1.2.4"
   }

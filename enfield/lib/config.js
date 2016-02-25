@@ -8,6 +8,7 @@ const _ = require('lodash');
 
 const log = require('./log');
 const raiseError = require('./raiseError');
+const templateFileName = require('./builder').templateFileName;
 
 
 /**
@@ -51,7 +52,7 @@ function getTheme(config) {
     }
 
     try {
-        fs.readFileSync(path.join(config.theme, 'template.html'), 'utf8');
+        fs.readFileSync(path.join(config.theme, templateFileName), 'utf8');
         return config.theme;
     }
     catch (readError) {
@@ -197,7 +198,7 @@ function getPages(config) {
                     `It looks like you have two subpages of "${pageTitle}" both called "${subpageTitle}". Page names at each level must be unique.`
                 );
             } else {
-                subPageTitleMap.set(pageTitle.toLowerCase());
+                subPageTitleMap.set(subpageTitle.toLowerCase());
             }
 
             pages.push({
@@ -222,7 +223,7 @@ function getPages(config) {
  * @param {object} config
  */
 function getSiteConfig(rawConfig) {
-    return _.omit(rawConfig, ['pages', 'theme', 'title']);
+    return _.omit(rawConfig, ['pages', 'theme', 'title', 'base_url']);
 }
 
 module.exports = {
