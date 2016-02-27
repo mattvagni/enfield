@@ -7,10 +7,10 @@ Loggers for various levels.
  */
 module.exports = {
     success(message) {
-        console.log(chalk.bold.green('+') + ` ${message}`);
+        console.log(chalk.bold.green('•') + ` ${message}`);
     },
-    warn(message) {
-        console.log(chalk.bold.yellow('-') + ` ${message}`);
+    info(message) {
+        console.log(chalk.bold.yellow('•') + ` ${message}`);
     },
     error(message) {
         console.log(chalk.red(`\n${message}\n`));

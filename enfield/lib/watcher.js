@@ -23,31 +23,31 @@ function startWatch(filesToWatch, callback) {
     watcher
     .on('add', (path) => {
         if (isReady) {
-            log.success(`${path} was added.`);
+            log.info(`${path} was added`);
             callback();
         }
     })
     .on('change', (path) => {
         if (isReady) {
-            log.success(`${path} was changed.`);
+            log.info(`${path} was changed`);
             callback();
         }
     })
     .on('unlink', (path) => {
         if (isReady) {
-            log.success(`${path} was deleted.`);
+            log.info(`${path} was deleted`);
             callback();
         }
     })
     .on('addDir', (path) => {
         if (isReady) {
-            log.success(`${path} was added.`);
+            log.info(`${path} was added`);
             callback();
         }
     })
     .on('unlinkDir', (path) => {
         if (isReady) {
-            log.success(`${path} was deleted.`);
+            log.info(`${path} was deleted`);
             callback();
         }
     })
@@ -55,7 +55,7 @@ function startWatch(filesToWatch, callback) {
         raiseError('Error watching files.', error);
     })
     .on('ready', () => {
-        log.success('Watching for file changes');
+        log.success('Watching for file changes...');
         isReady = true;
     });
 }

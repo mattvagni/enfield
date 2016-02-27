@@ -4,32 +4,11 @@ const fs = require('fs');
 
 const marked = require('marked');
 const pygmentize = require('pygmentize-bundled');
-const _ = require('lodash');
 const striptags = require('striptags');
 
 const raiseError = require('./raiseError');
 
-const renderer = new marked.Renderer();
-
-let headings = [];
-
-renderer.heading = function(text, level) {
-    const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
-
-    let string = '';
-    string += `<h${level} id="${escapedText}">${text}</h${level}>`;
-
-    if (level < 3) {
-        headings.push({
-            level: level,
-            anchor: `#${escapedText}`,
-            heading: striptags(text)
-        });
-    }
-
-    return string;
-};
-
+// Set-up pygmentize highlighting.
 marked.setOptions({
     highlight: function(code, lang, callback) {
         const options = { lang: lang, format: 'html' };
@@ -47,15 +26,52 @@ marked.setOptions({
 });
 
 /**
+ * Creates an instance of a marked renderer with a custom headings 'handling'.
+ *
+ * After rendering also gives access to the headings that were found.
+ */
+function createMarkedRender() {
+    const renderer = new marked.Renderer();
+
+    let headings = [];
+
+    renderer.heading = function(text, level) {
+        const strippedText = striptags(text);
+        const escapedText = strippedText.toLowerCase().replace(/[^\w]+/g, '-');
+
+        let string = '';
+        string += `<h${level} id="${escapedText}">${text}</h${level}>`;
+
+        if (level < 3) {
+            headings.push({
+                level: level,
+                anchor: escapedText,
+                heading: strippedText
+            });
+        }
+
+        return string;
+    };
+
+    return {
+        renderer: renderer,
+        headings: headings
+    };
+}
+
+/**
  * Reads a markdown file from disc & parses it.
  *
+ * The callback is called with an object:
+ * - 'html': The html result of the markdown parsing.
+ * - 'headings': An array of headings objects.
+ *
  * @param {string} markdownFile The location to the markdownFile to parse.
- * @param {function} callback Called with the result of the parsing.
+ * @param {function} callback Called with the result of the parsing
  */
 function parse(markdownFile, callback) {
     let markdownString;
-
-    headings = [];
+    const markedRenderer = createMarkedRender();
 
     try {
         markdownString = fs.readFileSync(markdownFile, 'utf8');
@@ -66,7 +82,7 @@ function parse(markdownFile, callback) {
         );
     }
 
-    marked(markdownString, {renderer: renderer}, (err, html) => {
+    marked(markdownString, {renderer: markedRenderer.renderer}, (err, html) => {
 
         if (err) {
             raiseError(
@@ -75,16 +91,9 @@ function parse(markdownFile, callback) {
             );
         }
 
-        // This is async so we need to clone the headings & then
-        // clear them for the next call to this. If we clear them after
-        // the callback then the execution order won't be correct.
-        // #javascript
-        let copyOfHeadings = _.clone(headings);
-        headings = [];
-
         callback(err, {
             html: html,
-            headings: copyOfHeadings
+            headings: markedRenderer.headings
         });
 
     });

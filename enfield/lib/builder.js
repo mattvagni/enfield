@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 
 const swig = require('swig');
 const _ = require('lodash');
-const urlBuilder = require('url-assembler');
+const url = require('url');
 
 const log = require('./log');
 const raiseError = require('./raiseError');
@@ -112,8 +112,17 @@ function build(config, outputDir, isPublishBuild, callback) {
 
     // If this is a 'publish' build then respect the config's base_url
     swig.setFilter('url', function(input) {
+
+        if (!input) {
+            throw Error(
+                `In your theme's template, you can only use the 'url' filter on strings of at least 1 character in length. ${Object.prototype.toString.call(input)} not a string`
+            );
+        }
+
         if (isPublishBuild) {
-            return urlBuilder(config.base_url).segment(input).toString();
+            let parsedUrl = url.parse(input);
+            parsedUrl.pathname = path.join(config.base_url, parsedUrl.pathname);
+            return url.format(parsedUrl);
         }
         return input;
     });
@@ -132,7 +141,6 @@ function build(config, outputDir, isPublishBuild, callback) {
 
     });
 }
-
 
 module.exports = {
     build: build,

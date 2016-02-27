@@ -12,6 +12,9 @@ module.exports = function raiseError(message, error) {
     log.error(message);
 
     if (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
         throw Error(error);
     } else {
         process.exit();
