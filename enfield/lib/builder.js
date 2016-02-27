@@ -5,11 +5,11 @@ const fs = require('fs-extra');
 
 const swig = require('swig');
 const _ = require('lodash');
-const url = require('url');
 
 const log = require('./log');
 const raiseError = require('./raiseError');
 const context = require('./context');
+const utils = require('./utils');
 
 /**
  * The name of the template that is expected to be within
@@ -155,14 +155,12 @@ function build(config, outputDir, isPublishBuild, callback) {
         }
 
         if (isPublishBuild) {
-            let parsedUrl = url.parse(input);
-            parsedUrl.pathname = path.join(config.base_url, parsedUrl.pathname);
-            return url.format(parsedUrl);
+            return utils.prefixUrlWithBaseUrl(input, config);
         }
         return input;
     });
 
-    context.getPageContextList(config, (err, pages) => {
+    context.getPageContextList(config, isPublishBuild, (err, pages) => {
 
         pages.forEach((pageContext) => {
             writePage(pageContext, template, outputDir);

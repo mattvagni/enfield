@@ -100,9 +100,11 @@ function createPaginationContext(pageContextList, currentPageContext) {
  *
  * @param {object} configPage A page from the config
  * @param {number} pageIndex The index of the current page.
+ * @param {object} config
+ * @param {boolean} isPublishBuild
  * @param {function} callback
  */
-function createPageContext(configPage, pageIndex, callback) {
+function createPageContext(configPage, pageIndex, config, isPublishBuild, callback) {
 
     let page = {};
 
@@ -115,7 +117,7 @@ function createPageContext(configPage, pageIndex, callback) {
         page.url = '/';
     }
 
-    markdown.parse(configPage.markdown, (err, markdownResults) => {
+    markdown.parse(configPage.markdown, config, isPublishBuild, (err, markdownResults) => {
         page.content = markdownResults.html;
         page.headings = markdownResults.headings.map((heading) => {
             let parsedUrl = url.parse(page.url);
@@ -132,15 +134,16 @@ function createPageContext(configPage, pageIndex, callback) {
  * Creates a list with the context for each page.
  *
  * @param {object} config
+ * @param {boolean} isPublishBuild
  * @param {function} callback
  */
-function getPageContextList(config, callback) {
+function getPageContextList(config, isPublishBuild, callback) {
 
     let index = 0;
 
     // Loop through each page and do the creation of the page asynchrously.
     async.map(config.pages, (page, pageCreationCallback) => {
-        createPageContext(page, index++, pageCreationCallback);
+        createPageContext(page, index++, config, isPublishBuild, pageCreationCallback);
     }, (err, pageContextList) => {
 
         // Add the menu to the context of each page.

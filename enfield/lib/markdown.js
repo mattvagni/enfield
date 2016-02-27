@@ -7,6 +7,7 @@ const pygmentize = require('pygmentize-bundled');
 const striptags = require('striptags');
 
 const raiseError = require('./raiseError');
+const utils = require('./utils');
 
 // Set-up pygmentize highlighting.
 marked.setOptions({
@@ -29,11 +30,28 @@ marked.setOptions({
  * Creates an instance of a marked renderer with a custom headings 'handling'.
  *
  * After rendering also gives access to the headings that were found.
+ *
+ * @param {object} config
+ * @param {boolean} isPublishBuild Use to deterine whether we need to change image url.
  */
-function createMarkedRender() {
+function createMarkedRender(config, isPublishBuild) {
     const renderer = new marked.Renderer();
 
     let headings = [];
+
+    renderer.link = function(href, title, text) {
+        if (isPublishBuild) {
+            href = utils.prefixUrlWithBaseUrl(href, config);
+        }
+        return `<a href="${href}" title="${title}">${text}</a>`;
+    };
+
+    renderer.image = function(src, title, text) {
+        if (isPublishBuild) {
+            src = utils.prefixUrlWithBaseUrl(src, config);
+        }
+        return `<img src="${src}" title="${title}" alt="${text}">`;
+    };
 
     renderer.heading = function(text, level) {
         const strippedText = striptags(text);
@@ -67,11 +85,13 @@ function createMarkedRender() {
  * - 'headings': An array of headings objects.
  *
  * @param {string} markdownFile The location to the markdownFile to parse.
+ * @param {object} config The config
+ * @param {boolean} isPublishBuild Whether this is a publish build.
  * @param {function} callback Called with the result of the parsing
  */
-function parse(markdownFile, callback) {
+function parse(markdownFile, config, isPublishBuild, callback) {
     let markdownString;
-    const markedRenderer = createMarkedRender();
+    const markedRenderer = createMarkedRender(config, isPublishBuild);
 
     try {
         markdownString = fs.readFileSync(markdownFile, 'utf8');
