@@ -61,6 +61,8 @@ function writePage(pageContext, template, outputDir) {
  * @param {string} outputDir
  */
 function copyThemeFiles(config, outputDir) {
+
+    // No need to try catch this as our config guarantees this.
     const files = fs.readdirSync(config.theme);
     const filesToCopy = _.without(files, templateFileName);
 
