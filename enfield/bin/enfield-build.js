@@ -39,6 +39,7 @@ function getFilesToWatch() {
     let filesToWatch = parsedConfig.pages.map((page) => page.markdown);
     filesToWatch.push(parsedConfig.theme);
     filesToWatch.push(options.config);
+    filesToWatch = filesToWatch.concat(parsedConfig.include);
     return filesToWatch;
 }
 
@@ -48,6 +49,7 @@ build(() => {
     if (options.watch) {
         watcher.watch(getFilesToWatch(), () => {
             // On watch, re-parse the config & rebuild.
+            watcher.add(getFilesToWatch());
             parseConfig();
             build();
         });

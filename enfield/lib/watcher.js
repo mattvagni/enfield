@@ -1,6 +1,7 @@
 'use strict';
 
 const chokidar = require('chokidar');
+const _ = require('lodash');
 
 const log = require('../lib/log');
 
@@ -15,6 +16,8 @@ let isReady = false;
  * @param {function} callback Called for each event.
  */
 function startWatch(filesToWatch, callback) {
+
+    callback = _.debounce(callback, 50, { trailing: true });
 
     watcher = chokidar.watch(filesToWatch, {
         persistent: true
@@ -61,5 +64,12 @@ function startWatch(filesToWatch, callback) {
 }
 
 module.exports = {
-    watch: startWatch
+    watch: startWatch,
+
+    /**
+     * Add files to watch
+     */
+    add(files) {
+        watcher.add(files);
+    }
 };
