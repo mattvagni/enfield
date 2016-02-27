@@ -17,6 +17,11 @@ const templateFileName = require('./builder').templateFileName;
 let configLocation;
 
 /**
+ * A list of 'reserved keys' for the config.
+ */
+const reserved_config_keys = ['pages', 'theme', 'title', 'base_url'];
+
+/**
  * Checks that a title is valid.
  *
  * @param {object} config
@@ -223,7 +228,7 @@ function getPages(config) {
  * @param {object} config
  */
 function getSiteConfig(rawConfig) {
-    return _.omit(rawConfig, ['pages', 'theme', 'title', 'base_url']);
+    return _.omit(rawConfig, reserved_config_keys);
 }
 
 module.exports = {
