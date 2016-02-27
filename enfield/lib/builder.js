@@ -75,6 +75,36 @@ function copyThemeFiles(config, outputDir) {
 }
 
 /**
+ * Copy any files over that the user specified to manually included.
+ */
+function copyManuallyIncludedFiles(config, outputDir) {
+
+    if (!config.include.length) {
+        return;
+    }
+
+    config.include.forEach((fileToInclude) => {
+
+        try {
+            const dest = path.join(outputDir, fileToInclude);
+            fs.copySync(fileToInclude, dest, {
+                clobber: true,
+                preserveTimestamps: true
+            });
+            log.debug(`${fileToInclude} -> ${dest}`);
+        }
+        catch(copyError) {
+            raiseError(
+                `Error copying ${copyError} to ${dest}`,
+                copyError
+            );
+        }
+    });
+
+
+}
+
+/**
  * Deletes the output dir.
  */
 function cleanBuildDirectory(outputDir) {
@@ -111,6 +141,9 @@ function build(config, outputDir, isPublishBuild, callback) {
 
     cleanBuildDirectory(outputDir);
     copyThemeFiles(config, outputDir);
+
+    // Copy any files the user manually specified to include
+    copyManuallyIncludedFiles(config, outputDir);
 
     // If this is a 'publish' build then respect the config's base_url
     swig.setFilter('url', function(input) {

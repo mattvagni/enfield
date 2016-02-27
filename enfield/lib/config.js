@@ -17,11 +17,6 @@ const templateFileName = require('./builder').templateFileName;
 let configLocation;
 
 /**
- * A list of 'reserved keys' for the config.
- */
-const reserved_config_keys = ['pages', 'theme', 'title', 'base_url'];
-
-/**
  * Checks that a title is valid.
  *
  * @param {object} config
@@ -223,12 +218,51 @@ function getPages(config) {
 
 
 /**
+ * Get any files that the user wants to manually include in his build.
+ */
+function getFilesToInclude(rawConfig) {
+
+    if (!rawConfig.include) {
+        return [];
+    }
+
+    if (!_.isArray(rawConfig.include)) {
+        raiseError(
+            'If you want to include any files in your config you must specify them as a list. Check the enfield docs for more information.',
+            `Expected 'include' to be an Array in ${configLocation}`
+        );
+    }
+
+    rawConfig.include.forEach((includeFile) => {
+
+        if (!_.isString(includeFile)) {
+            raiseError(
+                'Any files you want to include in your build must be strings',
+                `Expected ${includeFile} to be a string in 'include' (${configLocation})`
+            );
+        }
+
+        try {
+            fs.accessSync(includeFile);
+        }
+        catch(accessError) {
+            raiseError(
+                'Couldn\'t access a file or folder you said you wanted to manually include in your build',
+                accessError
+            );
+        }
+    });
+
+    return rawConfig.include;
+}
+
+/**
  * Get any other settings that the user has in the config.
  *
  * @param {object} config
  */
-function getSiteConfig(rawConfig) {
-    return _.omit(rawConfig, reserved_config_keys);
+function getSiteConfig(rawConfig, reservedKeys) {
+    return _.omit(rawConfig, reservedKeys);
 }
 
 module.exports = {
@@ -258,9 +292,11 @@ module.exports = {
             title: getTitle(rawConfig),
             theme: getTheme(rawConfig),
             pages: getPages(rawConfig),
-            site: getSiteConfig(rawConfig),
+            include: getFilesToInclude(rawConfig),
             base_url: getBaseUrl(rawConfig)
         };
+
+        config.site = getSiteConfig(rawConfig, Object.keys(config));
 
         log.debug('Config:' +  JSON.stringify(config, null, 4));
         return config;

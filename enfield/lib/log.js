@@ -17,7 +17,7 @@ module.exports = {
     },
     debug(message) {
         if (process.env.DEBUG) {
-            console.log(chalk.grey(`- ${message}`));
+            console.log(chalk.grey(`∙ ${message}`));
         }
     }
 };
