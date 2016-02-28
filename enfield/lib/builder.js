@@ -3,7 +3,7 @@
 const path = require('path');
 const fs = require('fs-extra');
 
-const swig = require('swig');
+const nunjucks = require('nunjucks');
 const _ = require('lodash');
 
 const log = require('./log');
@@ -20,11 +20,12 @@ const templateFileName = 'template.html';
 /**
  * Writes a single page to disc.
  *
+ * @param {object} templateEngine The template engine
  * @param {object} pageContext The context to a single page.
  * @param {string} template The template
  * @param {string} outputDir Where to output the page to.
  */
-function writePage(pageContext, template, outputDir) {
+function writePage(templateEngine, pageContext, template, outputDir) {
 
     let outputPath = path.join(
         outputDir, pageContext.page.url, '/index.html'
@@ -32,12 +33,12 @@ function writePage(pageContext, template, outputDir) {
     let html;
 
     try {
-        html = swig.render(template, { locals: pageContext});
+        html = templateEngine.renderString(template, pageContext);
     }
-    catch(swigError) {
+    catch(templateError) {
         raiseError(
             'Error rendering your theme\'s template.',
-            swigError
+            templateError
         );
     }
 
@@ -63,11 +64,11 @@ function writePage(pageContext, template, outputDir) {
 function copyThemeFiles(config, outputDir) {
 
     // No need to try catch this as our config guarantees this.
-    const files = fs.readdirSync(config.theme);
+    const files = fs.readdirSync(path.join(process.cwd(), config.theme));
     const filesToCopy = _.without(files, templateFileName);
 
     filesToCopy.forEach((file) => {
-        const src = path.join(config.theme, file);
+        const src = path.join(process.cwd(), config.theme, file);
         const dest = path.join(outputDir, file);
         fs.copy(src, dest);
         log.debug(`${src} -> ${dest}`);
@@ -87,11 +88,12 @@ function copyManuallyIncludedFiles(config, outputDir) {
 
         try {
             const dest = path.join(outputDir, fileToInclude);
-            fs.copySync(fileToInclude, dest, {
+            const src = path.join(process.cwd(), fileToInclude);
+            fs.copySync(src, dest, {
                 clobber: true,
                 preserveTimestamps: true
             });
-            log.debug(`${fileToInclude} -> ${dest}`);
+            log.debug(`${src} -> ${dest}`);
         }
         catch(copyError) {
             raiseError(
@@ -134,7 +136,8 @@ function cleanBuildDirectory(outputDir) {
  */
 function build(config, outputDir, isPublishBuild, callback) {
 
-    const templateLocation = path.join(config.theme, templateFileName);
+    const nunjucksEnv = new nunjucks.Environment();
+    const templateLocation = path.join(process.cwd(), config.theme, templateFileName);
 
     // No need to try catch this as our config guarantees this.
     const template = fs.readFileSync(templateLocation, 'utf8');
@@ -146,14 +149,12 @@ function build(config, outputDir, isPublishBuild, callback) {
     copyManuallyIncludedFiles(config, outputDir);
 
     // If this is a 'publish' build then respect the config's base_url
-    swig.setFilter('url', function(input) {
-
+    nunjucksEnv.addFilter('url', function(input) {
         if (!input) {
             throw Error(
                 `In your theme's template, you can only use the 'url' filter on strings of at least 1 character in length. ${Object.prototype.toString.call(input)} not a string`
             );
         }
-
         if (isPublishBuild) {
             return utils.prefixUrlWithBaseUrl(input, config);
         }
@@ -163,10 +164,10 @@ function build(config, outputDir, isPublishBuild, callback) {
     context.getPageContextList(config, isPublishBuild, (err, pages) => {
 
         pages.forEach((pageContext) => {
-            writePage(pageContext, template, outputDir);
+            writePage(nunjucksEnv, pageContext, template, outputDir);
         });
 
-        log.success(`Built "${config.title}" pages to ${path.relative(process.cwd(), outputDir)}`);
+        log.success(`Built ${pages.length} pages to ${path.relative(process.cwd(), outputDir)}`);
 
         if (callback) {
             callback();

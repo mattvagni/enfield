@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 
+const _ = require('lodash');
 const marked = require('marked');
 const pygmentize = require('pygmentize-bundled');
 const striptags = require('striptags');
@@ -64,7 +65,7 @@ function createMarkedRender(config, isPublishBuild) {
             headings.push({
                 level: level,
                 anchor: escapedText,
-                heading: strippedText
+                heading: _.unescape(strippedText)
             });
         }
 

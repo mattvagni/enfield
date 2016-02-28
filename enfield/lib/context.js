@@ -31,25 +31,27 @@ function slugify(s) {
  */
 function createMenuContext(pageContextsList, currentPageContext) {
 
-    let menuItems = [];
-    let lastSection = '';
+    let menuSections = [];
+
+    let currentSection = {
+        title: '',
+        pages: []
+    };
 
     pageContextsList.forEach((page, index, pages) => {
 
-        if (page.section !== lastSection) {
-            menuItems.push({
-                isSectionTitle: true,
-                title: page.section
-            });
-
-            lastSection = page.section;
+        // If the section has changed then create a new one and
+        // save the old one.
+        if (page.section !== currentSection.title) {
+            menuSections.push(currentSection);
+            currentSection = {
+                title: page.section,
+                pages: []
+            };
         }
 
-        let isActive = page.url === currentPageContext.url;
-
-        menuItems.push({
-            isPage: true,
-            isActive: isActive,
+        currentSection.pages.push({
+            isActive: page.url === currentPageContext.url,
             section: page.section,
             title: page.title,
             url: page.url,
@@ -58,7 +60,10 @@ function createMenuContext(pageContextsList, currentPageContext) {
 
     });
 
-    return menuItems;
+    // Push the last section
+    menuSections.push(currentSection);
+
+    return menuSections;
 }
 
 /**
@@ -152,9 +157,9 @@ function getPageContextList(config, isPublishBuild, callback) {
         pageContextList = pageContextList.map((pageContext) => {
 
             return {
-                menuItems: createMenuContext(pageContextList, pageContext),
-                page: pageContext,
                 title: config.title,
+                menuSections: createMenuContext(pageContextList, pageContext),
+                page: pageContext,
                 pagination: createPaginationContext(pageContextList, pageContext),
                 site: config.site
             };
