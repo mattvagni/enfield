@@ -7,7 +7,7 @@ const yaml = require('js-yaml');
 const _ = require('lodash');
 
 const log = require('./log');
-const raiseError = require('./raiseError');
+const utils = require('./utils');
 const templateFileName = require('./builder').templateFileName;
 
 
@@ -24,7 +24,7 @@ let configLocation;
 function getTitle(config) {
 
     if (!config.title || !_.isString(config.title) || !config.title.length) {
-        raiseError(
+        utils.raiseError(
             'In your config, you must define your "title" as a string of at least 1 character in length.',
             `Expected 'title' to be a String in ${configLocation}`
         );
@@ -45,7 +45,7 @@ function getTitle(config) {
 function getTheme(config) {
 
     if (!config.theme || !_.isString(config.theme) || !config.theme.length) {
-        raiseError(
+        utils.raiseError(
             'In your config, you must define a "theme" for your docs. This should be the name of the folder that contains your theme file(s).',
             `'theme' undefined in ${configLocation}`
         );
@@ -56,7 +56,7 @@ function getTheme(config) {
         return config.theme;
     }
     catch (readError) {
-        raiseError(
+        utils.raiseError(
             'Your theme doesn\'t include a template so it isn\'t invalid. Please refer to the enfield docs on how to make themes.',
             readError
         );
@@ -72,7 +72,7 @@ function getBaseUrl(config) {
     }
 
     if (!_.isString(config.base_url)) {
-        raiseError(
+        utils.raiseError(
             'You have incorrectly defined the \'base_url\' in your config.',
             `Expected 'base_url' to be a string in ${configLocation}`
         );
@@ -97,20 +97,20 @@ function validatePage(page, depth) {
     let pageValue = page[pageName];
 
     if (!_.isString(pageName)) {
-        raiseError(
+        utils.raiseError(
             'The name of each page has to be a string. Please check the enfield docs on how to define pages.',
             `Expected ${pageName} to be a String in ${configLocation}`
         );
     }
 
     if (depth === 1 && !_.isString(pageValue) && !_.isArray(pageValue)) {
-        raiseError(
+        utils.raiseError(
             `You have defined the page ${pageName} incorrectly. Each page in your config should be the name of a markdown file (a string) or a list of 'sub-pages' (a list). Please check the enfield docs on how to define pages.`,
             `Expected ${pageName} to be an Array or String in ${configLocation}`
         );
     }
     else if (depth === 2 && !_.isString(pageValue)) {
-        raiseError(
+        utils.raiseError(
             `You have defined the subpage ${pageName} incorrectly. Each subpage in your config should be the name of markdown file (a string).  Please check the enfield docs on how to define pages.`,
             `Expected subpage ${pageName} to be a String in ${configLocation}`
         );
@@ -121,7 +121,7 @@ function validatePage(page, depth) {
             fs.readFileSync(path.join(pageValue), 'utf8');
         }
         catch (readError) {
-            raiseError(
+            utils.raiseError(
                 `Couldn't read the markdown file at: "${pageValue}" for the page titled "${pageName}"`,
                 readError
             );
@@ -146,14 +146,14 @@ function getPages(config) {
 
     // Checks pages was specified.
     if (!config.pages) {
-        raiseError(
+        utils.raiseError(
             'You must specify a list of pages that defines your docs content & structure. Please check the enfield docs on how to define pages.',
             `'pages' not specified in ${configLocation}`
         );
     }
 
     if (!_.isArray(config.pages)) {
-        raiseError(
+        utils.raiseError(
             'Pages defined in your config have to be a list. Please check the enfield docs on how to define pages.',
             `Expected 'pages' to be an Array in ${configLocation}`
         );
@@ -170,7 +170,7 @@ function getPages(config) {
         validatePage(page, 1);
 
         if (pageTitleMap.has(pageTitle.toLowerCase())) {
-            raiseError(
+            utils.raiseError(
                 `It looks like you have two top-level pages both called "${pageTitle}". Page names at each level must be unique.`
             );
         } else {
@@ -194,7 +194,7 @@ function getPages(config) {
             validatePage(subPage, 2);
 
             if (subPageTitleMap.has(subpageTitle.toLowerCase())) {
-                raiseError(
+                utils.raiseError(
                     `It looks like you have two subpages of "${pageTitle}" both called "${subpageTitle}". Page names at each level must be unique.`
                 );
             } else {
@@ -227,7 +227,7 @@ function getFilesToInclude(rawConfig) {
     }
 
     if (!_.isArray(rawConfig.include)) {
-        raiseError(
+        utils.raiseError(
             'If you want to include any files in your config you must specify them as a list. Check the enfield docs for more information.',
             `Expected 'include' to be an Array in ${configLocation}`
         );
@@ -236,7 +236,7 @@ function getFilesToInclude(rawConfig) {
     rawConfig.include.forEach((includeFile) => {
 
         if (!_.isString(includeFile)) {
-            raiseError(
+            utils.raiseError(
                 'Any files you want to include in your build must be strings',
                 `Expected ${includeFile} to be a string in 'include' (${configLocation})`
             );
@@ -246,7 +246,7 @@ function getFilesToInclude(rawConfig) {
             fs.accessSync(includeFile);
         }
         catch(accessError) {
-            raiseError(
+            utils.raiseError(
                 'Couldn\'t access a file or folder you said you wanted to manually include in your build',
                 accessError
             );
@@ -285,7 +285,7 @@ module.exports = {
                 json: true,
             }) || {};
         } catch (yamlParseError) {
-            raiseError(`Error parsing the config in ${configFile}`, yamlParseError);
+            utils.raiseError(`Error parsing the config in ${configFile}`, yamlParseError);
         }
 
         config = {

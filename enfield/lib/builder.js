@@ -7,7 +7,6 @@ const nunjucks = require('nunjucks');
 const _ = require('lodash');
 
 const log = require('./log');
-const raiseError = require('./raiseError');
 const context = require('./context');
 const utils = require('./utils');
 
@@ -36,7 +35,7 @@ function writePage(templateEngine, pageContext, template, outputDir) {
         html = templateEngine.renderString(template, pageContext);
     }
     catch(templateError) {
-        raiseError(
+        utils.raiseError(
             'Error rendering your theme\'s template.',
             templateError
         );
@@ -47,7 +46,7 @@ function writePage(templateEngine, pageContext, template, outputDir) {
         log.debug(`"${pageContext.page.title}" -> ${outputPath}`);
     }
     catch(writeError) {
-        raiseError(
+        utils.raiseError(
             `Error writing page to ${outputPath}`,
             writeError
         );
@@ -96,7 +95,7 @@ function copyManuallyIncludedFiles(config, outputDir) {
             log.debug(`${src} -> ${dest}`);
         }
         catch(copyError) {
-            raiseError(
+            utils.raiseError(
                 `Error copying ${copyError} to ${dest}`,
                 copyError
             );
@@ -115,7 +114,7 @@ function cleanBuildDirectory(outputDir) {
     let realOutputDir = fs.realpathSync(outputDir);
 
     if (realWorkingDir === realOutputDir || realWorkingDir.length > realOutputDir.length) {
-        raiseError(
+        utils.raiseError(
             'Your output directory must be subfolder. This is because enfield deletes ' +
             'it each time before rebuilding. We don\'t ever want to delete anything ' +
             'outside of the current working directory. Ever.'

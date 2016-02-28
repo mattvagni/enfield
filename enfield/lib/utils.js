@@ -24,5 +24,24 @@ module.exports = {
 
         parsedUrl.pathname = path.join(config.base_url, parsedUrl.pathname);
         return parsedUrl.format(parsedUrl);
+    },
+
+    /**
+     * Raise an error - no going back grom this.
+     *
+     * @param {string} message The user helpful explanation of why it errored.
+     * @param {object} error The error message or actual error instance (optional);
+     */
+    raiseError(message, error) {
+        log.error(message);
+
+        if (error) {
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw Error(error);
+        } else {
+            process.exit();
+        }
     }
 };

@@ -4,6 +4,7 @@ const chokidar = require('chokidar');
 const _ = require('lodash');
 
 const log = require('../lib/log');
+const utils = require('../lib/utils');
 
 let watcher;
 let isReady = false;
@@ -55,7 +56,7 @@ function startWatch(filesToWatch, callback) {
         }
     })
     .on('error', (error) => {
-        raiseError('Error watching files.', error);
+        utils.raiseError('Error watching files.', error);
     })
     .on('ready', () => {
         log.success('Watching for file changes...');
