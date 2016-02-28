@@ -9,7 +9,7 @@ const options = require('commander');
  * Dear future me,
  *
  * Commander does this thing where for each 'command' it will load a file
- * like so: enfield-<command-name>.js
+ * like so: hoxton-<command-name>.js
  */
 options
     .version(require('../../package.json').version)

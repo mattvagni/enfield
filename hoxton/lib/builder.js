@@ -115,7 +115,7 @@ function cleanBuildDirectory(outputDir) {
 
     if (realWorkingDir === realOutputDir || realWorkingDir.length > realOutputDir.length) {
         utils.raiseError(
-            'Your output directory must be subfolder. This is because enfield deletes ' +
+            'Your output directory must be subfolder. This is because hoxton deletes ' +
             'it each time before rebuilding. We don\'t ever want to delete anything ' +
             'outside of the current working directory. Ever.'
         );

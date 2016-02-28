@@ -1,21 +1,24 @@
 {
-  "name": "enfield",
-  "version": "1.0.0",
-  "description": "A themable static site generator for API docs.",
+  "name": "hoxton",
+  "version": "0.0.1",
+  "description": "Hoxton is a static-site generator based on pages, it's designed for docs.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mattvagni/enfield.git"
+    "url": "git+https://github.com/mattvagni/hoxton.git"
   },
-  "author": "",
-  "license": "ISC",
+  "bin": {
+    "hoxton": "hoxton/bin/hoxton.js"
+  },
+  "author": "mattvagni",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mattvagni/enfield/issues"
+    "url": "https://github.com/mattvagni/hoxton/issues"
   },
-  "homepage": "https://github.com/mattvagni/enfield#readme",
+  "homepage": "http://mattvagni.github.io/hoxton-docs/",
   "dependencies": {
     "async": "^1.5.2",
     "chalk": "^1.1.1",

@@ -57,7 +57,7 @@ function getTheme(config) {
     }
     catch (readError) {
         utils.raiseError(
-            'Your theme doesn\'t include a template so it isn\'t invalid. Please refer to the enfield docs on how to make themes.',
+            'Your theme doesn\'t include a template so it isn\'t invalid. Please refer to the hoxton docs on how to make themes.',
             readError
         );
     }
@@ -98,20 +98,20 @@ function validatePage(page, depth) {
 
     if (!_.isString(pageName)) {
         utils.raiseError(
-            'The name of each page has to be a string. Please check the enfield docs on how to define pages.',
+            'The name of each page has to be a string. Please check the hoxton docs on how to define pages.',
             `Expected ${pageName} to be a String in ${configLocation}`
         );
     }
 
     if (depth === 1 && !_.isString(pageValue) && !_.isArray(pageValue)) {
         utils.raiseError(
-            `You have defined the page ${pageName} incorrectly. Each page in your config should be the name of a markdown file (a string) or a list of 'sub-pages' (a list). Please check the enfield docs on how to define pages.`,
+            `You have defined the page ${pageName} incorrectly. Each page in your config should be the name of a markdown file (a string) or a list of 'sub-pages' (a list). Please check the hoxton docs on how to define pages.`,
             `Expected ${pageName} to be an Array or String in ${configLocation}`
         );
     }
     else if (depth === 2 && !_.isString(pageValue)) {
         utils.raiseError(
-            `You have defined the subpage ${pageName} incorrectly. Each subpage in your config should be the name of markdown file (a string).  Please check the enfield docs on how to define pages.`,
+            `You have defined the subpage ${pageName} incorrectly. Each subpage in your config should be the name of markdown file (a string).  Please check the hoxton docs on how to define pages.`,
             `Expected subpage ${pageName} to be a String in ${configLocation}`
         );
     }
@@ -147,14 +147,14 @@ function getPages(config) {
     // Checks pages was specified.
     if (!config.pages) {
         utils.raiseError(
-            'You must specify a list of pages that defines your docs content & structure. Please check the enfield docs on how to define pages.',
+            'You must specify a list of pages that defines your docs content & structure. Please check the hoxton docs on how to define pages.',
             `'pages' not specified in ${configLocation}`
         );
     }
 
     if (!_.isArray(config.pages)) {
         utils.raiseError(
-            'Pages defined in your config have to be a list. Please check the enfield docs on how to define pages.',
+            'Pages defined in your config have to be a list. Please check the hoxton docs on how to define pages.',
             `Expected 'pages' to be an Array in ${configLocation}`
         );
     }
@@ -228,7 +228,7 @@ function getFilesToInclude(rawConfig) {
 
     if (!_.isArray(rawConfig.include)) {
         utils.raiseError(
-            'If you want to include any files in your config you must specify them as a list. Check the enfield docs for more information.',
+            'If you want to include any files in your config you must specify them as a list. Check the hoxton docs for more information.',
             `Expected 'include' to be an Array in ${configLocation}`
         );
     }

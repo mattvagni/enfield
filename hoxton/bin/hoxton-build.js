@@ -14,7 +14,7 @@ options
     .option('-d, --debug', 'Turn on debug logging')
     .option('-c, --config [file]', 'The location of your .yaml config file', 'config.yml')
     .option('-o, --outputDir [folder]', 'Where you\'d like to ouput your site to', '_site')
-    .option('-s, --serve', 'If you\d like enfield to serve you site.')
+    .option('-s, --serve', 'If you\d like hoxton to serve you site.')
     .option('-p, --port [number]', 'The port you\'d like to serve your site on', (s) => parseInt(s, 10), '3000')
     .option('-w, --watch', 'If you want to watch for changes and rebuild')
     .parse(process.argv);
