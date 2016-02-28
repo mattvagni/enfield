@@ -3,6 +3,8 @@
 const path = require('path');
 const url = require('url');
 
+const log = require('./log');
+
 module.exports = {
     /**
      * Prefixes an internal url with the base_url. If the url is not internal

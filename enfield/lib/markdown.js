@@ -55,13 +55,11 @@ function createMarkedRender(config) {
         let string = '';
         string += `<h${level} id="${escapedText}">${text}</h${level}>`;
 
-        if (level < 3) {
-            headings.push({
-                level: level,
-                anchor: escapedText,
-                heading: _.unescape(strippedText)
-            });
-        }
+        headings.push({
+            level: level,
+            anchor: escapedText,
+            heading: _.unescape(strippedText)
+        });
 
         return string;
     };
