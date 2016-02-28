@@ -131,10 +131,9 @@ function cleanBuildDirectory(outputDir) {
  *
  * @param {object} config
  * @param {string} outputDir
- * @param {boolean} isPublishBuild
  * @param {function} callback Called once all pages are built.
  */
-function build(config, outputDir, isPublishBuild, callback) {
+function build(config, outputDir, callback) {
 
     const nunjucksEnv = new nunjucks.Environment();
     const templateLocation = path.join(process.cwd(), config.theme, templateFileName);
@@ -155,13 +154,10 @@ function build(config, outputDir, isPublishBuild, callback) {
                 `In your theme's template, you can only use the 'url' filter on strings of at least 1 character in length. ${Object.prototype.toString.call(input)} not a string`
             );
         }
-        if (isPublishBuild) {
-            return utils.prefixUrlWithBaseUrl(input, config);
-        }
-        return input;
+        return utils.prefixUrlWithBaseUrl(input, config);
     });
 
-    context.getPageContextList(config, isPublishBuild, (err, pages) => {
+    context.getPageContextList(config, (err, pages) => {
 
         pages.forEach((pageContext) => {
             writePage(nunjucksEnv, pageContext, template, outputDir);

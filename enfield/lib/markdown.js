@@ -33,24 +33,19 @@ marked.setOptions({
  * After rendering also gives access to the headings that were found.
  *
  * @param {object} config
- * @param {boolean} isPublishBuild Use to deterine whether we need to change image url.
  */
-function createMarkedRender(config, isPublishBuild) {
+function createMarkedRender(config) {
     const renderer = new marked.Renderer();
 
     let headings = [];
 
     renderer.link = function(href, title, text) {
-        if (isPublishBuild) {
-            href = utils.prefixUrlWithBaseUrl(href, config);
-        }
+        href = utils.prefixUrlWithBaseUrl(href, config);
         return `<a href="${href}" title="${title}">${text}</a>`;
     };
 
     renderer.image = function(src, title, text) {
-        if (isPublishBuild) {
-            src = utils.prefixUrlWithBaseUrl(src, config);
-        }
+        src = utils.prefixUrlWithBaseUrl(src, config);
         return `<img src="${src}" title="${title}" alt="${text}">`;
     };
 
@@ -87,12 +82,11 @@ function createMarkedRender(config, isPublishBuild) {
  *
  * @param {string} markdownFile The location to the markdownFile to parse.
  * @param {object} config The config
- * @param {boolean} isPublishBuild Whether this is a publish build.
  * @param {function} callback Called with the result of the parsing
  */
-function parse(markdownFile, config, isPublishBuild, callback) {
+function parse(markdownFile, config, callback) {
     let markdownString;
-    const markedRenderer = createMarkedRender(config, isPublishBuild);
+    const markedRenderer = createMarkedRender(config);
 
     try {
         markdownString = fs.readFileSync(markdownFile, 'utf8');

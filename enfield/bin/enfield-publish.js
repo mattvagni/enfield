@@ -20,10 +20,12 @@ if (options.debug) {
     process.env.DEBUG = true;
 }
 
+process.env.PRODUCTION = true;
+
 let parsedConfig = config.parse(path.join(process.cwd(), options.config));
 let outputDir = path.join(process.cwd(), options.outputDir);
 
-builder.build(parsedConfig, outputDir, true, () => {
+builder.build(parsedConfig, outputDir, () => {
     log.success('Publishing to Github pages...');
 
     ghpages.publish(outputDir, (err) => {

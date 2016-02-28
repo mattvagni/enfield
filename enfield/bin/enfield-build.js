@@ -32,7 +32,7 @@ function parseConfig() {
 }
 
 function build(callback) {
-    builder.build(parsedConfig, outputDir, options.publish, callback);
+    builder.build(parsedConfig, outputDir, callback);
 }
 
 function getFilesToWatch() {
