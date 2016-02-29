@@ -1,6 +1,6 @@
 {
   "name": "hoxton",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Hoxton is a static-site generator based on pages, it's designed for docs.",
   "main": "index.js",
   "scripts": {
