@@ -110,8 +110,8 @@ function copyManuallyIncludedFiles(config, outputDir) {
  */
 function cleanBuildDirectory(outputDir) {
 
-    let realWorkingDir = fs.realpathSync(process.cwd());
-    let realOutputDir = fs.realpathSync(outputDir);
+    let realWorkingDir = path.resolve(process.cwd());
+    let realOutputDir = path.resolve(outputDir);
 
     if (realWorkingDir === realOutputDir || realWorkingDir.length > realOutputDir.length) {
         utils.raiseError(
