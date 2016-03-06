@@ -43,7 +43,12 @@ function createMenuContext(pageContextsList, currentPageContext) {
         // If the section has changed then create a new one and
         // save the old one.
         if (page.section !== currentSection.title) {
-            menuSections.push(currentSection);
+
+            // Skip sections without pages.
+            if (currentSection.pages.length) {
+                menuSections.push(currentSection);
+            }
+
             currentSection = {
                 title: page.section,
                 pages: []
