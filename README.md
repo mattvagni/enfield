@@ -6,4 +6,4 @@ With Hoxton you can:
 - Completely customize your docs with your own theme
 - Easily publish to github pages or anywhere else.
 
-[Check it out.](http://mattvagni.github.io/hoxton-docs/)
+[Docs & Example](http://mattvagni.github.io/hoxton-docs/)
