@@ -1,11 +1,7 @@
 {
   "name": "hoxton",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Hoxton is a static-site generator based on pages, it's designed for docs.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mattvagni/hoxton.git"

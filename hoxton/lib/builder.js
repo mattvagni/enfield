@@ -69,7 +69,7 @@ function copyThemeFiles(config, outputDir) {
     filesToCopy.forEach((file) => {
         const src = path.join(process.cwd(), config.theme, file);
         const dest = path.join(outputDir, file);
-        fs.copy(src, dest);
+        fs.copySync(src, dest);
         log.debug(`${src} -> ${dest}`);
     });
 }
