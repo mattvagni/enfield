@@ -7,3 +7,6 @@ With Hoxton you can:
 - Easily publish to github pages or anywhere else.
 
 [Docs & Example](http://mattvagni.github.io/hoxton-docs/)
+
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/mattvagni/hoxton.svg)](https://greenkeeper.io/)
